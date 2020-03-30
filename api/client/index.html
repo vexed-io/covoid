@@ -10,6 +10,12 @@
         * {
             font-family: Helvetica, Arial, sans-serif;
         }
+        .stats {
+            display: flex;
+        }
+        .stat {
+            flex: 1;
+        }
 
         div.tooltip {	
             position: absolute;			
@@ -30,10 +36,29 @@
         <label for="state_select">Region</label>
         <select id="state_select" name="state_select"></select>
     </div>
+    <div class="stats">
+        <div class="stat" >
+            <h3>Currrent Cases</h3>
+            <div class="stat_value" id="cases_today"></div>
+        </div>
+        <div class="stat">
+            <h3>Cases Yesterday</h3>
+            <div class="stat_value" id="cases_yesterday"></div>
+        </div>
+        <div class="stat">
+            <h3>Currrent Deaths</h3>
+            <div class="stat_value" id="deaths_today"></div>
+        </div>
+        <div class="stat">
+            <h3>Deaths Yesterday</h3>
+            <div class="stat_value" id="deaths_yesterday"></div>
+        </div>
+    </div>
     <h2>Cases by Region</h2>
     <svg id="states_total"> </svg>
-    <h2>Acceleration of cases over time</h2>
+    <h2>Total Cases Over Time</h2>
     <svg id="state_total_time"> </svg>
+    <h2>Daily Percent Increase</h2>
     <svg id="state_trend"> </svg>
 
 </body>
@@ -57,13 +82,17 @@
         renderCountryData(appState.currentState);
         renderStateData(appState.currentState);
         renderTotalOverTime(appState.currentState);
+        renderStats(appState.currentState);
     }
+
+
 
     function fetchAndBindStates () {
         const sel =  document.getElementById('state_select');
         renderCountryData(appState.currentState);
         renderStateData(appState.currentState);
         renderTotalOverTime(appState.currentState);
+        renderStats(appState.currentState);
 
         let states = fetch('/covid_api/states')
             .then((response) => response.json())
@@ -81,6 +110,15 @@
                 renderStateData(appState.currentState)
             }  
         })
+    }
+    
+    async function renderStats (state) {
+        const s = await stats(state);
+        console.log(s);
+        document.getElementById('cases_today').innerHTML = s.today.cases
+        document.getElementById('cases_yesterday').innerHTML = s.yesterday.cases
+        document.getElementById('deaths_today').innerHTML = s.today.deaths
+        document.getElementById('deaths_yesterday').innerHTML = s.yesterday.deaths
     }
   
     function bootstrapMetadata () {
@@ -344,6 +382,15 @@
             : fetch(`/covid_api/state_total?state=${state}`).then((response) => response.json());
 
         return await appState.stateTotal;
+    }
+    async function stats(state) {
+        console.log(state);
+        console.log(await getStateData(state));
+        const stats = {
+            today: (await getStateData(state))[0],
+            yesterday: (await getStateData(state))[1]
+        }
+        return stats;
     }
 
 </script>
