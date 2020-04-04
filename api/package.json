@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "ts-node-dev index.ts",
     "build": "yarn run tsc",
-    "start": "node ./_dist/index.js"
+    "start": "node ./_dist/index.js",
+    "load_nyc": "ts-node ./scripts/load_nyc.ts",
+    "load_ecdc": "ts-node ./scripts/load_ecdc.ts"
   },
   "dependencies": {
     "@koa/cors": "2",
