@@ -12,36 +12,59 @@ import { migrateDatabase } from './services/db-structure';
 const joi = router.Joi;
 const route = router();
 
+let cache = {
+
+}
+
 
 route.get('/covid_api/state_case', async (ctx) => {
-    const client = await getClient;
-    if (ctx.query.state === 'US') {
-        ctx.body = await getCountryCaseData(ctx.query.days);
-    }
-    else {
-        ctx.body = await getStateCaseData(ctx.query.state, ctx.query.days);
-    }
-});
+    const state = ctx.query.state;
+    const cacheKey = `state_case:${state}`;
 
-// route.get('/covid_api/us_total', async (ctx) => {
-//     ctx.body = await getUSTotals();
-// });
+    if(!cache[cacheKey]) {
+        const client = await getClient;
+        if (ctx.query.state === 'US') {
+            cache[cacheKey] = await getCountryCaseData(ctx.query.days);
+        }
+        else {
+            cache[cacheKey] = await getStateCaseData(ctx.query.state, ctx.query.days);
+        }
+    }
+
+    ctx.body = cache[cacheKey];
+});
 
 route.get('/covid_api/state_total', async (ctx) => {
-    if (ctx.query.state === 'US') {
-        ctx.body = await getStateTotals();
+    const state = ctx.query.state;
+    const cacheKey = `state_total:${state}`;
+
+    if(!cache[cacheKey]) {
+        if (ctx.query.state === 'US') {
+             cache[cacheKey] = await getStateTotals();
+        }
+        else {
+             cache[cacheKey] = await getStateCountyTotals(ctx.query.state);
+        }
     }
-    else {
-        ctx.body = await getStateCountyTotals(ctx.query.state);
-    }
+
+    ctx.body = cache[cacheKey];
 });
 
+
 route.get('/covid_api/states', async (ctx) => {
-    ctx.body = await getStates();
+    const cacheKey = `states`;
+    if(!cache[cacheKey]) {
+        cache[cacheKey] =  await getStates();
+    }
+    ctx.body = cache[cacheKey];
 });
 
 route.get('/covid_api/current_date', async (ctx) => {
-    ctx.body = await getMaxDate();
+    const cacheKey = `current_date`;
+    if(!cache[cacheKey]) {
+        cache[cacheKey] = await getMaxDate();
+    }
+    ctx.body = cache[cacheKey];
 });
 
 route.get('/covid_api/ecdc', async(ctx) => {
@@ -54,10 +77,12 @@ route.get('/covid_api/nyt', async(ctx) => {
 
 route.get('/covid_api/load/nyt', async(ctx) => {
     await loadNYTData();
+    cache = {};
     ctx.body = 'success';
 })
 route.get('/covid_api/load/ecdc', async(ctx) => {
     await loadECDCData();
+    cache = {};
     ctx.body = 'success';
 })
 

@@ -6,8 +6,8 @@ create table if not exists nyt_state (
     deaths integer
 );
 
-create index nyt_state_date on nyt_state (date);
-create index nyt_state_state_date on nyt_state (state, date);
+create index if not exists nyt_state_date on nyt_state (date);
+create index if not exists nyt_state_state_date on nyt_state (state, date);
 
 create table if not exists nyt_counties ( 
     date date, 
@@ -18,8 +18,8 @@ create table if not exists nyt_counties (
     deaths integer
 );
 
-create index nyt_counties_date on nyt_counties (date);
-create index nyt_counties_county_date on nyt_counties (county, date);
+create index if not exists  nyt_counties_date on nyt_counties (date);
+create index if not exists  nyt_counties_county_date on nyt_counties (county, date);
 
 create table if not exists ecdc (
     date date,
@@ -31,8 +31,8 @@ create table if not exists ecdc (
     pop_data_2018 integer
 );
 
-create index ecdc_date on ecdc (date);
-create index ecdc_date_countries_and_territories on ecdc (countries_and_territories, date);
+create index if not exists  ecdc_date on ecdc (date);
+create index if not exists  ecdc_date_countries_and_territories on ecdc (countries_and_territories, date);
 
 create table if not exists locations (
     name text,

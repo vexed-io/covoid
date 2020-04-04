@@ -106,7 +106,7 @@ const loadNYTStates = async (data) => {
             fips) 
         VALUES($1, $2, $3, $4, $5)`
 
-    data.forEach(async (d) => {
+    await Promise.all(data.map(async (d) => {
         await client.query(query, [
             d.date,
             parseInt(d.cases),
@@ -117,8 +117,8 @@ const loadNYTStates = async (data) => {
             console.error(e);
             process.kill(0);
         })
-    })
-    client.query('commit;');  
+    }));
+    await client.query('commit;');  
 }
 
 const loadNYTCounties = async (data) => {
@@ -136,7 +136,7 @@ const loadNYTCounties = async (data) => {
             fips) 
         VALUES($1, $2, $3, $4, $5, $6)`
 
-    data.forEach(async (d) => {
+    await Promise.all(data.map(async (d) => {
         const binds = [
             d.date,
             parseInt(d.cases),
@@ -150,6 +150,6 @@ const loadNYTCounties = async (data) => {
             console.error(e);
             process.kill(0);
         })
-    })
-    client.query('commit;');
+    }))
+    await client.query('commit;');
 }
