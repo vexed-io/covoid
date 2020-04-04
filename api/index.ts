@@ -13,7 +13,11 @@ const joi = router.Joi;
 const route = router();
 
 route.get('/', async(ctx) => {
-    ctx.redirect('/covid.html');
+    ctx.redirect('/covid');
+});
+
+route.get('/covid', async(ctx) => {
+    ctx.redirect('/covid');
 });
 
 route.get('/covid_api/state_case', async (ctx) => {
@@ -86,7 +90,10 @@ route.get('/covid_api/load/ecdc', async(ctx) => {
 })
 
 const app = new koa();
-app.use(staticServer('./client'));
+app.use(staticServer('./client', {
+    maxage: 1000*60*5,
+    extensions: ['html']
+}));
 app.use(cors());
 app.use(route.middleware());
 (async () => {
