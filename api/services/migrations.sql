@@ -39,3 +39,12 @@ create table if not exists locations (
     level text,
     parent text
 );
+
+create table if not exists who (
+    date date,
+    admin_name text,
+    cases numeric,
+    deaths numeric,
+    lat numeric,
+    lon numeric
+)

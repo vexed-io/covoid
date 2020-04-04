@@ -3,10 +3,10 @@ import * as router from 'koa-joi-router';
 import * as staticServer from 'koa-static';
 import { getStateCaseData, getStateTotals, getStates, getMaxDate, getCountryCaseData, getStateCountyTotals } from './services';
 import * as cors from '@koa/cors';
-import { getNYTData, loadECDCData, getECDCData, loadNYTData } from './services/data-importers';
+import { getNYTData, loadECDCData, getECDCData, loadNYTData, getWHOData, loadWHOData } from './services/data-importers';
 import * as cache from './services/cache';
+import * as helmet from 'koa-helmet';
 import { init } from './db';
-// import * as forceHTTPS from 'koa-force-https';
 
 
 const joi = router.Joi;
@@ -22,15 +22,16 @@ route.get('/covid', async(ctx) => {
 
 route.get('/covid_api/state_case', async (ctx) => {
     const state = ctx.query.state;
-    const cacheKey = `state_case:${state}`;
+    const days = ctx.query.days;
+    const cacheKey = `state_case:${state}:${days}`;
 
     if(!cache.get(cacheKey)) {
 
         if (ctx.query.state === 'US') {
-            cache.set(cacheKey, await getCountryCaseData(ctx.query.days))
+            cache.set(cacheKey, await getCountryCaseData(days))
         }
         else {
-            cache.set(cacheKey,  await getStateCaseData(ctx.query.state, ctx.query.days))
+            cache.set(cacheKey,  await getStateCaseData(state, days))
         }
     }
 
@@ -78,24 +79,41 @@ route.get('/covid_api/nyt', async(ctx) => {
     ctx.body = await getNYTData();
 })
 
+route.get('/covid_api/who', async(ctx) => {
+    ctx.body = await getWHOData();
+})
+
 route.get('/covid_api/load/nyt', async(ctx) => {
     await loadNYTData();
     cache.reset();
     ctx.body = 'success';
 })
+
 route.get('/covid_api/load/ecdc', async(ctx) => {
     await loadECDCData();
     cache.reset();
     ctx.body = 'success';
 })
 
+route.get('/covid_api/load/who', async(ctx) => {
+    await loadWHOData();
+    cache.reset();
+    ctx.body = 'success';
+})
+
 const app = new koa();
+
+app.use(helmet());
+
 app.use(staticServer('./client', {
     maxage: 1000*60*5,
-    extensions: ['html']
+    extensions: ['html', '.js']
 }));
+
 app.use(cors());
+
 app.use(route.middleware());
+
 (async () => {
     await init;
     app.listen(process.env.PORT || 3000, () => {

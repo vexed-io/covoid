@@ -17,7 +17,7 @@
             flex: 1;
         }
 
-        div.tooltip {	
+        .tooltip {	
             position: absolute;			
             text-align: center;						
             padding: 2px;				
@@ -26,6 +26,7 @@
             border: 0px;		
             pointer-events: none;			
         }
+
     </style>
 </head>
 <body>
@@ -70,8 +71,7 @@
         stateData: {}
     };
 
-    const formatter = d3.timeFormat("%m/%d/%Y");
-    const div = d3.select("body").append("div")	
+    const tooltipDiv = d3.select("body").append("div")	
             .attr("class", "tooltip")				
             .style("opacity", 0);
 
@@ -79,8 +79,8 @@
     fetchAndBindStates();
 
     window.onresize = function () {
-        renderCountryData(appState.currentState);
-        renderStateData(appState.currentState);
+        renderSubregionBreakdown(appState.currentState);
+        renderDailyPercentIncrease(appState.currentState);
         renderTotalOverTime(appState.currentState);
         renderStats(appState.currentState);
     }
@@ -89,8 +89,8 @@
 
     function fetchAndBindStates () {
         const sel =  document.getElementById('state_select');
-        renderCountryData(appState.currentState);
-        renderStateData(appState.currentState);
+        renderSubregionBreakdown(appState.currentState);
+        renderDailyPercentIncrease(appState.currentState);
         renderTotalOverTime(appState.currentState);
         renderStats(appState.currentState);
 
@@ -107,7 +107,7 @@
             sel.onchange = (e) => {
                 appState.currentState = e.target.value;
                 location.search = `state=${appState.currentState}`;
-                renderStateData(appState.currentState)
+                renderDailyPercentIncrease(appState.currentState)
             }  
         })
     }
@@ -129,79 +129,11 @@
             });
     }
 
-    function renderStateData (state) {
-        getStateData(state).then((data) => {
-        
-        const {x,y,width,height,margin} = getBounds();
-        // format the data
-        data = data.map(function(d) {
-            d.percent_increase_cases = +d.percent_increase_cases;
-            return d
-        }).sort((a,b) => {
-            if(a.date == b.date) return 0
-            else if(a.date > b.date) return 1
-            else return -1
-        });
-        
-        var state_svg = d3.select("#state_trend")
-        .html("")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-                .attr("transform", 
-                    "translate(" + margin.left + "," + margin.top + ")");
-
-        // Scale the range of the data in the domains
-        x.domain(data.map(function(d) { return d.date; }));
-        y.domain([0, d3.max(data, function(d) { return d.percent_increase_cases; })]);
-
-        // append the rectangles for the bar chart
-        state_svg.selectAll(".bar")
-            .data(data)
-            .enter().append("rect")
-            .attr("class", "bar")
-            .attr("x", function(d) { return x(d.date); })
-            .attr("width", x.bandwidth())
-            .attr("y", function(d) { return y(d.percent_increase_cases); })
-            .attr("height", function(d) { return height - y(d.percent_increase_cases); })
-            .on("mouseover", function(d) {		
-                div.transition()		
-                    .duration(200)		
-                    .style("opacity", .9);		
-                div	.html(d.date + "<br/>"  + d.percent_increase_cases.toFixed(2) * 100 +'%')	
-                    .style("left", (d3.event.pageX) + "px")		
-                    .style("top", (d3.event.pageY - 28) + "px");	
-                })					
-            .on("mouseout", function(d) {		
-                div.transition()		
-                    .duration(500)		
-                    .style("opacity", 0);	
-            });
-
-        // add the x Axis
-        state_svg.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x))
-            .selectAll("text")	
-            .style("text-anchor", "end")
-            .attr("dx", "-.8em")
-            .attr("dy", ".15em")
-            .attr("transform", function(d) {
-                return "rotate(-65)" 
-                });
-
-            
-
-        // add the y Axis
-        state_svg.append("g")
-            .call(d3.axisLeft(y));
-    })
-    }
+    
    
-    function renderCountryData (state) {
+    function renderSubregionBreakdown (state) {
         getStateTotalData(state).then((data) => {
-        const margin = {top: 40, right: 40, bottom: 40, left: 70};
+        const margin = {top: 40, right: 40, bottom: 90, left: 70};
         const width = window.innerWidth - margin.left - margin.right;
         const height = 500 - margin.top - margin.bottom;
 
@@ -251,15 +183,15 @@
                 return w(d.state); })
             .attr("height", w.bandwidth())
             .on("mouseover", function(d) {		
-                div.transition()		
+                tooltipDiv.transition()		
                     .duration(200)		
                     .style("opacity", .9);		
-                div	.html(d.state + "<br/>"  + d.sum)	
+                tooltipDiv.html(d.state + "<br/>"  + d.sum)	
                     .style("left", (d3.event.pageX) + "px")		
                     .style("top", (d3.event.pageY - 28) + "px");	
                 })					
             .on("mouseout", function(d) {		
-                div.transition()		
+                tooltipDiv.transition()		
                     .duration(500)		
                     .style("opacity", 0);	
             });
@@ -308,24 +240,108 @@
         x.domain(data.map(function(d) { return d.date; }));
         y.domain([0, d3.max(data, function(d) { return d.cases; })]);
         // append the rectangles for the bar chart
+        state_svg //.selectAll(".bar")
+            .datum(data)
+            // .enter()
+            .append("path")
+            .attr("fill", "none")
+            .attr("stroke", "black")
+            .attr("stroke-width", 1.5)
+            .attr("d", d3.line()
+                .x(function(d) { return x(d.date) })
+                .y(function(d) { return y(d.cases) })
+                )
+
+        state_svg
+            .append('g')
+            .selectAll("dot")
+            .data(data)
+            .enter()
+            .append("circle")
+            .attr("cx", function (d) { return x(d.date); } )
+            .attr("cy", function (d) { return y(d.cases); } )
+            .attr("r", 4)
+            .style("fill", "#000000")
+            .on("mouseover", function(d) {		
+                tooltipDiv.transition()		
+                    .duration(200)		
+                    .style("opacity", .9);		
+                tooltipDiv.html(d.date + "<br/>"  + d.cases)	
+                    .style("left", (d3.event.pageX) + "px")		
+                    .style("top", (d3.event.pageY - 28) + "px");	
+                })					
+            .on("mouseout", function(d) {		
+                tooltipDiv.transition()		
+                    .duration(500)		
+                    .style("opacity", 0);	
+            });
+
+
+        // add the x Axis
+        state_svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x))
+            .selectAll("text")	
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", function(d) {
+                return "rotate(-65)" 
+                });
+
+        // add the y Axis
+        state_svg.append("g")
+            .call(d3.axisLeft(y));
+        })
+    }
+
+    function renderDailyPercentIncrease (state) {
+        getStateData(state).then((data) => {
+        
+        const {x,y,width,height,margin} = getBounds();
+        // format the data
+        data = data.map(function(d) {
+            d.percent_increase_cases = +d.percent_increase_cases;
+            return d
+        }).sort((a,b) => {
+            if(a.date == b.date) return 0
+            else if(a.date > b.date) return 1
+            else return -1
+        });
+        
+        var state_svg = d3.select("#state_trend")
+        .html("")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+                .attr("transform", 
+                    "translate(" + margin.left + "," + margin.top + ")");
+
+        // Scale the range of the data in the domains
+        x.domain(data.map(function(d) { return d.date; }));
+    
+        y.domain([0, d3.max(data, function(d) { return d.percent_increase_cases; })]);
+
+        // append the rectangles for the bar chart
         state_svg.selectAll(".bar")
             .data(data)
             .enter().append("rect")
             .attr("class", "bar")
             .attr("x", function(d) { return x(d.date); })
             .attr("width", x.bandwidth())
-            .attr("y", function(d) { return y(d.cases); })
-            .attr("height", function(d) { return height - y(d.cases); })
+            .attr("y", function(d) { return y(d.percent_increase_cases); })
+            .attr("height", function(d) { return height - y(d.percent_increase_cases); })
             .on("mouseover", function(d) {		
-                div.transition()		
+                tooltipDiv.transition()		
                     .duration(200)		
                     .style("opacity", .9);		
-                div	.html(d.date + "<br/>"  + d.cases)	
+                tooltipDiv.html(d.date + "<br/>"  + d.percent_increase_cases.toFixed(2) * 100 +'%')	
                     .style("left", (d3.event.pageX) + "px")		
                     .style("top", (d3.event.pageY - 28) + "px");	
                 })					
             .on("mouseout", function(d) {		
-                div.transition()		
+                tooltipDiv.transition()		
                     .duration(500)		
                     .style("opacity", 0);	
             });
@@ -348,11 +364,11 @@
         // add the y Axis
         state_svg.append("g")
             .call(d3.axisLeft(y));
-        })
+    })
     }
 
     function getBounds() {
-        const margin = {top: 20, right: 40, bottom: 80, left: 70};
+        const margin = {top: 20, right: 40, bottom: 90, left: 70};
         const width = window.innerWidth - margin.left - margin.right;
         const height = 500 - margin.top - margin.bottom;
 
@@ -368,7 +384,7 @@
     async function getStateData(state) {
         appState.stateData[state] = appState.stateData[state] 
             ? appState.stateData[state] 
-            : fetch(`/covid_api/state_case?state=${state}&days=14`).then((response) => response.json());
+            : fetch(`/covid_api/state_case?state=${state}&days=28`).then((response) => response.json());
         
         return await appState.stateData[state]
     }
