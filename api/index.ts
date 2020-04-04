@@ -4,6 +4,8 @@ import * as staticServer from 'koa-static';
 import { getClient } from './db';
 import { getStateDeathData, getStateCaseData, getUSTotals, getStateTotals, getStates, getMaxDate, getCountryCaseData, getStateCountyTotals } from './services';
 import * as cors from '@koa/cors';
+import { getNYTData, loadECDCData, getECDCData, loadNYTData } from './services/data-importers';
+import { migrateDatabase } from './services/db-structure';
 // import * as forceHTTPS from 'koa-force-https';
 
 
@@ -42,11 +44,31 @@ route.get('/covid_api/current_date', async (ctx) => {
     ctx.body = await getMaxDate();
 });
 
+route.get('/covid_api/ecdc', async(ctx) => {
+    ctx.body = await getECDCData();
+})
+
+route.get('/covid_api/nyt', async(ctx) => {
+    ctx.body = await getNYTData();
+})
+
+route.get('/covid_api/load/nyt', async(ctx) => {
+    await loadNYTData();
+    ctx.body = 'success';
+})
+route.get('/covid_api/load/ecdc', async(ctx) => {
+    await loadECDCData();
+    ctx.body = 'success';
+})
+
 const app = new koa();
 app.use(staticServer('./client'));
 app.use(cors());
 // app.use(forceHTTPS());
 app.use(route.middleware());
-app.listen(process.env.PORT || 3000, () => {
-    console.log(JSON.stringify({message: 'Started server', port: process.env.PORT}))
-});
+(async () => {
+    await migrateDatabase();
+    app.listen(process.env.PORT || 3000, () => {
+        console.log(JSON.stringify({message: 'Started server', port: process.env.PORT}))
+    });
+})()

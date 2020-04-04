@@ -17,7 +17,7 @@ export const getCountryCaseData = async (days) => {
                 deaths,
                 lag(cases, 1) over (partition by state order by date asc) as cases_yesterday,
                 lag(deaths, 1) over (partition by state order by date asc) as deaths_yesterday
-            from covid_state
+            from nyt_state
             where cases > 0) t 
         group by 1 
         order by date desc
@@ -36,7 +36,7 @@ export const getStateCaseData = async (state, days) => {
             deaths,
             ((cases::numeric / nullif(lag(cases, 1) over (partition by state order by date asc), 0) - 1)) as percent_increase_cases, 
             ((deaths::numeric / nullif(lag(deaths, 1) over (partition by state order by date asc), 0) - 1)) as percent_increase_deaths   
-        from covid_state
+        from nyt_state
         where cases > 0  
         ${state ? 'and state = $2' : ''}
         order by 1 desc
@@ -54,7 +54,7 @@ export const getStateDeathData = async (state) => {
             state, 
             deaths, 
             ((deaths::numeric / lag(deaths, 1) over (partition by state order by date asc) - 1)) as percent_increase_deaths   
-        from covid_state
+        from nyt_state
         where deaths > 0  
         ${state ? 'and state = $1' : ''}
         order by date desc;
@@ -65,7 +65,7 @@ export const getStateDeathData = async (state) => {
 export const getUSTotals = async () => {
     const client = await getClient();
     const response = await client.query(`
-        select sum(cases) from covid_state where date = (select max(date) from covid_state);
+        select sum(cases) from nyt_state where date = (select max(date) from nyt_state);
     `);
     return response.rows[0];
 };
@@ -76,8 +76,8 @@ export const getStateCountyTotals = async (state) => {
         select 
             county as state, 
             sum(cases) 
-        from covid_county 
-        where date = (select max(date) from covid_county)
+        from nyt_counties 
+        where date = (select max(date) from nyt_counties)
         and state = $1
         group by 1
         order by 2 desc;
@@ -91,8 +91,8 @@ export const getStateTotals = async () => {
         select 
             state, 
             sum(cases) 
-        from covid_state 
-        where date = (select max(date) from covid_state) 
+        from nyt_state 
+        where date = (select max(date) from nyt_state) 
         group by 1
         order by 2 desc;
     `);
@@ -105,7 +105,7 @@ export const getStates = async () => {
     
     const client = await getClient();
     const response = await client.query(`
-        select distinct state from covid_state order by state asc;
+        select distinct state from nyt_state order by state asc;
     `);
     states  = response.rows;
     states.unshift({ state: 'US'});
@@ -118,7 +118,7 @@ export const getMaxDate = async () => {
     
     const client = await getClient();
     const response = await client.query(`
-        select max(date)::text date from covid_state;
+        select max(date)::text date from nyt_state;
     `);
     maxDate  = response.rows[0];
     return maxDate;
