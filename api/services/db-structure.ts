@@ -1,4 +1,3 @@
-import { getClient } from "../db";
 import { promises } from 'fs';
 
 async function readModuleFile(path) {
@@ -7,10 +6,8 @@ async function readModuleFile(path) {
 }
 
 
-export const migrateDatabase = async () => {
-    const client = await getClient();
-    // let query = await readModuleFile('./migrations.sql');
-    // console.log(query);
+export const migrateDatabase = async (client) => {
+
     return await client.query(`create table if not exists nyt_state ( 
         date date, 
         state text, 
