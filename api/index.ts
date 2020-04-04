@@ -12,6 +12,10 @@ import { init } from './db';
 const joi = router.Joi;
 const route = router();
 
+route.get('/', async(ctx) => {
+    ctx.redirect('/covid.html');
+});
+
 route.get('/covid_api/state_case', async (ctx) => {
     const state = ctx.query.state;
     const cacheKey = `state_case:${state}`;

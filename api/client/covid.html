@@ -38,19 +38,19 @@
     </div>
     <div class="stats">
         <div class="stat" >
-            <h3>Currrent Cases</h3>
+            <h3>Total Cases</h3>
             <div class="stat_value" id="cases_today"></div>
         </div>
         <div class="stat">
-            <h3>Cases Yesterday</h3>
+            <h3>Total Cases Yesterday</h3>
             <div class="stat_value" id="cases_yesterday"></div>
         </div>
         <div class="stat">
-            <h3>Currrent Deaths</h3>
+            <h3>Total Deaths</h3>
             <div class="stat_value" id="deaths_today"></div>
         </div>
         <div class="stat">
-            <h3>Deaths Yesterday</h3>
+            <h3>Total Deaths Yesterday</h3>
             <div class="stat_value" id="deaths_yesterday"></div>
         </div>
     </div>
@@ -114,7 +114,6 @@
     
     async function renderStats (state) {
         const s = await stats(state);
-        console.log(s);
         document.getElementById('cases_today').innerHTML = s.today.cases
         document.getElementById('cases_yesterday').innerHTML = s.yesterday.cases
         document.getElementById('deaths_today').innerHTML = s.today.deaths
@@ -249,7 +248,6 @@
             .attr("x", function(d) { return 0; })
             .attr("width", function(d) { return v(d.sum); })
             .attr("y", function(d) { 
-                console.log(d.state, w(d.state));
                 return w(d.state); })
             .attr("height", w.bandwidth())
             .on("mouseover", function(d) {		
@@ -309,7 +307,6 @@
         // Scale the range of the data in the domains
         x.domain(data.map(function(d) { return d.date; }));
         y.domain([0, d3.max(data, function(d) { return d.cases; })]);
-        console.log(y.domain(), d3.max(data, function(d) { return d.cases; }), data);
         // append the rectangles for the bar chart
         state_svg.selectAll(".bar")
             .data(data)
@@ -384,8 +381,6 @@
         return await appState.stateTotal;
     }
     async function stats(state) {
-        console.log(state);
-        console.log(await getStateData(state));
         const stats = {
             today: (await getStateData(state))[0],
             yesterday: (await getStateData(state))[1]
