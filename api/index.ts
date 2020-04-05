@@ -3,10 +3,13 @@ import * as router from 'koa-joi-router';
 import * as staticServer from 'koa-static';
 import { getStateCaseData, getStateTotals, getStates, getMaxDate, getCountryCaseData, getStateCountyTotals } from './services';
 import * as cors from '@koa/cors';
-import { getNYTData, loadECDCData, getECDCData, loadNYTData, getWHOData, loadWHOData } from './services/data-importers';
 import * as cache from './services/cache';
 import * as helmet from 'koa-helmet';
 import { init } from './db';
+import { getECDCData, loadECDCData } from './services/etl/ecdc';
+import { getNYTData, loadNYTData } from './services/etl/nyt';
+import { getWHOData, loadWHOData } from './services/etl/who';
+import { getJHUData, loadJHUData } from './services/etl/jhu';
 
 
 const joi = router.Joi;
@@ -83,6 +86,10 @@ route.get('/covid_api/who', async(ctx) => {
     ctx.body = await getWHOData();
 })
 
+route.get('/covid_api/jhu', async(ctx) => {
+    ctx.body = await getJHUData();
+})
+
 route.get('/covid_api/load/nyt', async(ctx) => {
     await loadNYTData();
     cache.reset();
@@ -100,6 +107,15 @@ route.get('/covid_api/load/who', async(ctx) => {
     cache.reset();
     ctx.body = 'success';
 })
+
+route.get('/covid_api/load/jhu', async(ctx) => {
+    await loadJHUData();
+    cache.reset();
+    ctx.body = 'success';
+})
+
+
+
 
 const app = new koa();
 

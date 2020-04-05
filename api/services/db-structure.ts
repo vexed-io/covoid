@@ -57,5 +57,32 @@ export const migrateDatabase = async (client) => {
         deaths numeric,
         lat numeric,
         lon numeric
-    )`); 
+    );
+
+    create table if not exists jhu_case (
+        date date,
+        cases numeric,
+        country text,
+        province text,
+        lat numeric,
+        lon numeric
+    );
+    
+    create table if not exists jhu_death (
+        date date,
+        deaths numeric,
+        country text,
+        province text,
+        lat numeric,
+        lon numeric
+    );
+    
+    create table if not exists jhu_recovery (
+        date date,
+        recoveries numeric,
+        country text,
+        province text,
+        lat numeric,
+        lon numeric
+    );`); 
 }

@@ -1,4 +1,4 @@
-import { loadECDCData } from "../services/data-importers";
+import { loadECDCData } from "../services/etl/ecdc";
 import { reset } from "../services/cache";
 
 (async () => {

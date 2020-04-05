@@ -1,5 +1,5 @@
-import { loadNYTData } from "../services/data-importers";
 import { reset } from "../services/cache";
+import { loadNYTData } from "../services/etl/nyt";
 
 (async () => {
     await loadNYTData();
