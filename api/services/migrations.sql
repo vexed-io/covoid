@@ -49,7 +49,7 @@ create table if not exists who (
     lon numeric
 )
 
-create table if not exists jhu_case (
+create table if not exists jhu_cases (
     date date,
     cases numeric,
     country text,
@@ -58,7 +58,7 @@ create table if not exists jhu_case (
     lon numeric,
 )
 
-create table if not exists jhu_death (
+create table if not exists jhu_deaths (
     date date,
     deaths numeric,
     country text,
@@ -67,7 +67,7 @@ create table if not exists jhu_death (
     lon numeric,
 )
 
-create table if not exists jhu_recovery (
+create table if not exists jhu_recoveries (
     date date,
     recoveries numeric,
     country text,

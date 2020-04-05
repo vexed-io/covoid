@@ -9,7 +9,9 @@
     "start": "node ./_dist/index.js",
     "load_nyc": "ts-node ./scripts/load_nyc.ts",
     "load_ecdc": "ts-node ./scripts/load_ecdc.ts",
-    "load": "yarn load_nyc && yarn load_ecdc"
+    "load_jhu": "ts-node ./scripts/load_jhu.ts",
+    "load_who": "ts-node ./scripts/load_who.ts",
+    "load": "yarn load_nyc && yarn load_ecdc && yarn load_jhu && yarn load_who"
   },
   "dependencies": {
     "@koa/cors": "2",

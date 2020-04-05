@@ -1,3 +1,5 @@
+// John Hopkins University
+
 import axios from 'axios';
 import { getClient } from "../../db";
 import { csvParse } from "./util";
@@ -32,15 +34,16 @@ export const loadJHUData = async () => {
     await loadJHUCases(data.cases);
     await loadJHUDeaths(data.deaths);
     await loadJHURecoveries(data.recoveries);
+    await refreshJHU();
 }
 
 const loadJHUCases = async(data) => {
     const client = await getClient();
     client.query('begin;');
-    client.query('truncate jhu_case;');
+    client.query('truncate jhu_cases;');
 
     const query = `INSERT INTO 
-        jhu_case(
+        jhu_cases(
             date, 
             cases, 
             country,
@@ -71,10 +74,10 @@ const loadJHUCases = async(data) => {
 const loadJHUDeaths = async(data) => {
     const client = await getClient();
     client.query('begin;');
-    client.query('truncate jhu_death;');
+    client.query('truncate jhu_deaths;');
 
     const query = `INSERT INTO 
-        jhu_death(
+        jhu_deaths(
             date, 
             deaths, 
             country,
@@ -102,10 +105,10 @@ const loadJHUDeaths = async(data) => {
 const loadJHURecoveries = async(data) => {
     const client = await getClient();
     client.query('begin;');
-    client.query('truncate jhu_recovery;');
+    client.query('truncate jhu_recoveries;');
 
     const query = `INSERT INTO 
-        jhu_recovery(
+        jhu_recoveries(
             date, 
             recoveries, 
             country,
@@ -128,6 +131,12 @@ const loadJHURecoveries = async(data) => {
         })
     }))
     await client.query('commit;');
+}
+
+const refreshJHU =  async() => {
+    const client = await getClient();
+    client.query('REFRESH MATERIALIZED VIEW jhu;');
+
 }
 
 
