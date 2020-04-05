@@ -21,50 +21,50 @@ route.get('/covid_api/state_case', async (ctx) => {
     const days = ctx.query.days;
     const cacheKey = `state_case:${state}:${days}`;
 
-    if(!cache.get(cacheKey)) {
+    if(!await cache.get(cacheKey)) {
 
         if (ctx.query.state === 'US') {
-            cache.set(cacheKey, await getCountryCaseData(days))
+            await cache.set(cacheKey, await getCountryCaseData(days))
         }
         else {
-            cache.set(cacheKey,  await getStateCaseData(state, days))
+            await cache.set(cacheKey,  await getStateCaseData(state, days))
         }
     }
 
-    ctx.body = cache.get(cacheKey);
+    ctx.body = await cache.get(cacheKey);
 });
 
 route.get('/covid_api/state_total', async (ctx) => {
     const state = ctx.query.state;
     const cacheKey = `state_total:${state}`;
 
-    if(!cache.get(cacheKey)) {
+    if(!await cache.get(cacheKey)) {
         if (ctx.query.state === 'US') {
-            cache.set(cacheKey, await getStateTotals());
+            await cache.set(cacheKey, await getStateTotals());
         }
         else {
-            cache.set(cacheKey, await getStateCountyTotals(ctx.query.state));
+            await cache.set(cacheKey, await getStateCountyTotals(ctx.query.state));
         }
     }
 
-    ctx.body = cache.get(cacheKey);
+    ctx.body = await cache.get(cacheKey);
 });
 
 
 route.get('/covid_api/states', async (ctx) => {
     const cacheKey = `states`;
-    if(!cache.get(cacheKey)) {
-        cache.set(cacheKey, await getStates());
+    if(!await cache.get(cacheKey)) {
+        await cache.set(cacheKey, await getStates());
     }
-    ctx.body = cache.get(cacheKey);
+    ctx.body = await cache.get(cacheKey);
 });
 
 route.get('/covid_api/current_date', async (ctx) => {
     const cacheKey = `current_date`;
-    if(!cache.get(cacheKey)) {
-        cache.set(cacheKey, await getMaxDate());
+    if(!await cache.get(cacheKey)) {
+        await cache.set(cacheKey, await getMaxDate());
     }
-    ctx.body = cache.get(cacheKey);
+    ctx.body = await cache.get(cacheKey);
 });
 
 route.get('/covid_api/ecdc', async(ctx) => {

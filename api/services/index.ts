@@ -99,28 +99,21 @@ export const getStateTotals = async () => {
     return response.rows;
 };
 
-let states;
 export const getStates = async () => {
-    if (states) return states;
-    
     const client = await getClient();
     const response = await client.query(`
         select distinct state from nyt_state order by state asc;
     `);
-    states  = response.rows;
+    const states  = response.rows;
     states.unshift({ state: 'US'});
     return states;
 }
 
-let maxDate;
-export const getMaxDate = async () => {
-    if (maxDate) return maxDate;
-    
+export const getMaxDate = async () => {    
     const client = await getClient();
     const response = await client.query(`
         select max(date)::text date from nyt_state;
     `);
-    maxDate  = response.rows[0];
-    return maxDate;
+    return response.rows[0];
 }
 

@@ -21,9 +21,10 @@ services:
       -  "PGHOST=postgres"
       -  "PGPASSWORD=password"
       -  "PGPORT=5432"
+      -  "REDIS_URL=redis://redis:6379"
     ports:
       - "3000:3000"
     depends_on: 
       - postgres
-      - redis
+      - redis 
     command: yarn run dev

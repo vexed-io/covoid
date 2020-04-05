@@ -68,7 +68,7 @@
     <svg id="state_total_time"> </svg>
     <h2>Daily Percent Increase</h2>
     <svg id="state_trend"> </svg>
-
+    <a href="/faq">FAQ</a>
 </body>
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script>
@@ -341,7 +341,7 @@
                 tooltipDiv.transition()		
                     .duration(200)		
                     .style("opacity", .9);		
-                tooltipDiv.html(d.date + "<br/>"  + d.percent_increase_cases.toFixed(2) * 100 +'%')	
+                tooltipDiv.html(d.date + "<br/>"  + (d.percent_increase_cases * 100).toFixed(1) +'%')	
                     .style("left", (d3.event.pageX) + "px")		
                     .style("top", (d3.event.pageY - 28) + "px");	
                 })					
@@ -389,7 +389,7 @@
     async function getStateData(state) {
         appState.stateData[state] = appState.stateData[state] 
             ? appState.stateData[state] 
-            : fetch(`/covid_api/state_case?state=${state}`).then((response) => response.json());
+            : fetch(`/covid_api/state_case?state=${state}&days=28`).then((response) => response.json());
         
         return await appState.stateData[state]
     }
@@ -397,7 +397,7 @@
     async function getStateTotalData(state) {
         appState.stateTotal = appState.stateTotal 
             ? appState.stateTotal 
-            : fetch(`/covid_api/state_total?state=${state}`).then((response) => response.json());
+            : fetch(`/covid_api/state_total?state=${state}&days=28`).then((response) => response.json());
 
         return await appState.stateTotal;
     }
