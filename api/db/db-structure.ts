@@ -93,10 +93,10 @@ export const migrateDatabase = async (client) => {
             cases, 
             deaths, 
             recoveries, 
-            jhu_case.lat, 
-            jhu_case.lon 
-        from jhu_case 
-            join jhu_death using(date, country, province) 
-            join jhu_recovery using (date, country, province)
+            jhu_cases.lat, 
+            jhu_cases.lon 
+        from jhu_cases 
+            join jhu_deaths using(date, country, province) 
+            join jhu_recoveries using (date, country, province)
     );`); 
 }

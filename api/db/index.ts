@@ -1,5 +1,5 @@
 import { Client } from 'pg';
-import { migrateDatabase } from '../services/db-structure';
+import { migrateDatabase } from './db-structure';
 
 const connectionString = process.env.DATABASE;
 

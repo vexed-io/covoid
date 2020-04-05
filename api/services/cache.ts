@@ -10,4 +10,4 @@ export const set = (key, value) => {
 
 export const reset = () => {
     cache = {};
-}
+};
