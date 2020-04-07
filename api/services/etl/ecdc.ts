@@ -17,11 +17,38 @@ type ecdcDatum = {
     popData2018: string;
 } 
 
+function getFormattedDate (date) {
+    const year = date.getFullYear();
+    const month = ("0" + (date.getMonth() + 1)).slice(-2)
+    const day = ("0" + (date.getDate() + 1)).slice(-2)
+    return `${year}-${month}-${day}`;
+}
+
 export const getECDCData = async () => {
+    const now = new Date();
+    const yesterday = (new Date(now.setDate(now.getDate() -1)));
+    const twodaysago = (new Date(yesterday.setDate(yesterday.getDate() -1)));
+
+    console.log(`https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-${getFormattedDate(now)}.xlsx`)
+
     return axios({
-        url: 'https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-2020-04-04.xlsx',
+        url: `https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-${getFormattedDate(now)}.xlsx`,
         method: 'GET',
-        responseType: 'arraybuffer', // important
+        responseType: 'arraybuffer',
+    }).catch((err) => {
+        console.log(err);
+        return axios({
+            url: `https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-${getFormattedDate(yesterday)}.xlsx`,
+            method: 'GET',
+            responseType: 'arraybuffer',
+        })
+    }).catch((err) => {
+        console.log(err);
+        return axios({
+            url: `https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-${getFormattedDate(twodaysago)}.xlsx`,
+            method: 'GET',
+            responseType: 'arraybuffer',
+        })
     }).then((body) => {
         const workbook = xlsx.read(body.data);
         const sheetNameList = workbook.SheetNames;
