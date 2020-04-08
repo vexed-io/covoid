@@ -90,7 +90,7 @@
 
         .graph {
             margin-top: 12px;
-            padding-bottom: 24px;
+            padding-bottom: 18px;
             border-bottom: 1px solid black;
         }
 
@@ -104,6 +104,19 @@
             pointer-events: none;			
         }
 
+        .stat_insight {
+            font-size: .5em;
+        }
+        .graph .stat_insight {
+            font-size: .8em;
+        }
+        .stat_insight.good {
+            color: green;
+        }
+        .stat_insight.bad {
+            color: red;
+        }
+
     </style>
     <script>
         !function(){var analytics=window.analytics=window.analytics||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on"];analytics.factory=function(t){return function(){var e=Array.prototype.slice.call(arguments);e.unshift(t);analytics.push(e);return analytics}};for(var t=0;t<analytics.methods.length;t++){var e=analytics.methods[t];analytics[e]=analytics.factory(e)}analytics.load=function(t,e){var n=document.createElement("script");n.type="text/javascript";n.async=!0;n.src="https://cdn.segment.com/analytics.js/v1/"+t+"/analytics.min.js";var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(n,a);analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.1.0";
@@ -114,12 +127,12 @@
     </script>
 </head>
 <body>
-    <div class="decal-row">
+    <!-- <div class="decal-row">
         <div class="decal"></div>
         <div class="decal"></div>
         <div class="decal"></div>
         <div class="decal"></div>
-    </div>
+    </div> -->
     <div class="head">
         <div class="topline">
             <h1>Covid Statistics</h1>
@@ -144,7 +157,7 @@
             <div class="stat_value" id="cases_today"></div>
             <div class="stat_delta" id="cases_yesterday">
             </div>
-            <div class="state_insight" id="cases_insight">
+            <div class="stat_insight" id="cases_insight">
             </div>
         </div>
 
@@ -152,20 +165,23 @@
             <h3>Deaths</h3>
             <div class="stat_value" id="deaths_today"></div>
             <div class="stat_delta" id="deaths_yesterday"></div>
-            <div class="state_insight" id="deaths_insight">
+            <div class="stat_insight" id="deaths_insight">
             </div>
         </div>
     </div>
     <div class="graph">
         <h2>Cases by Region</h2>
+        <div class="stat_insight bad" id="region_insight"></div>
         <svg id="states_total"> </svg>
     </div>
     <div class="graph">
         <h2>Total Cases Over Time</h2>
+        <div class="stat_insight" id="total_insight"></div>
         <svg id="state_total_time"> </svg>
     </div>
     <div class="graph">
         <h2>Daily Percent Increase</h2>
+        <div class="stat_insight" id="percent_insight"></div>
         <svg id="state_trend"> </svg>
     </div>
     <a href="/faq">FAQ</a>
@@ -226,10 +242,34 @@
     
     async function renderStats (state) {
         const s = await stats(state);
-        document.getElementById('cases_today').innerHTML = s.today.cases.toLocaleString()
-        document.getElementById('cases_yesterday').innerHTML =  '+' +(s.today.cases - s.yesterday.cases).toLocaleString() + ' since yesterday'
-        document.getElementById('deaths_today').innerHTML = s.today.deaths.toLocaleString()
-        document.getElementById('deaths_yesterday').innerHTML = '+' + (s.today.deaths - s.yesterday.deaths).toLocaleString() + ' since yesterday'
+
+        document.getElementById('cases_today').innerHTML = s.cases.toLocaleString()
+        document.getElementById('cases_yesterday').innerHTML =  '+' + s.case_delta.toLocaleString() + ' since yesterday'
+        document.getElementById('deaths_today').innerHTML = s.deaths.toLocaleString()
+        document.getElementById('deaths_yesterday').innerHTML = '+' + s.death_delta.toLocaleString() + ' since yesterday';
+        const cPercentToday = (s.case_percent_increase_today*100).toFixed(0);
+        const cPercentYesterday = (s.case_percent_increase_yesterday*100).toFixed(0);
+        const dPercentToday = (s.death_percent_increase_today*100).toFixed(0);
+        const dPercentYesterday = (s.death_percent_increase_yesterday*100).toFixed(0);
+
+        const cIncrease = cPercentToday > cPercentYesterday;
+        const dIncrease = dPercentToday > dPercentYesterday;
+
+        const cInsightElem = document.getElementById('cases_insight');
+        const dInsightElem = document.getElementById('deaths_insight');
+        
+        cInsightElem
+            .innerHTML = `+${cPercentToday}% (compared to +${cPercentYesterday}% yesterday)`;
+       
+        dInsightElem
+            .innerHTML = `+${dPercentToday}% (compared to +${dPercentYesterday}% yesterday)`;
+
+        cInsightElem.classList.add(cIncrease ? 'bad' : 'good');
+        dInsightElem.classList.add(dIncrease ? 'bad' : 'good');
+
+        document.getElementById('region_insight').innerHTML = 
+            `${s.fastest_state.state} has the fastest daily growth at ${(s.fastest_state.percent * 100).toFixed(0)}%`
+
     }
   
     function bootstrapMetadata () {
@@ -243,7 +283,7 @@
 
     function renderSubregionBreakdown (state) {
         getStateTotalData(state).then((data) => {
-        const margin = {top: 40, right: 40, bottom: 40, left: 70};
+        const margin = {top: 40, right: 40, bottom: 50, left: 70};
         const width = window.innerWidth - 48 - margin.left - margin.right;
         const height = 410 - margin.top - margin.bottom;
 
@@ -337,6 +377,12 @@
             else if(a.date > b.date) return 1
             else return -1
         });
+
+        const lastD = data[data.length-1];
+
+        document.getElementById('total_insight').innerHTML = 
+            `${(lastD.percent_increase_cases*100).toFixed(0)}% daily growth`
+
         
         var state_svg = d3.select("#state_total_time")
         .html("")
@@ -419,6 +465,17 @@
             else if(a.date > b.date) return 1
             else return -1
         });
+
+        const change = (((data[data.length - 1].percent_increase_cases / 
+            data[data.length - 2].percent_increase_cases) - 1) * 100) .toFixed(0);
+        
+           
+        
+        document.getElementById('percent_insight').innerHTML = 
+            `${change}% growth acceleration change`
+
+        document.getElementById('percent_insight')
+            .classList.add(change < 0 ? 'good' : 'bad')
         
         var state_svg = d3.select("#state_trend")
         .html("")
@@ -508,7 +565,11 @@
     }
     
     async function stats(state) {
-        const stats = {
+        const stats = await fetch(`/covid_api/stats?state=${state}`)
+            .then((response) => response.json());
+
+        const s = {
+            ...stats,
             today: (await getStateData(state))[0],
             yesterday: (await getStateData(state))[1]
         }

@@ -1,5 +1,5 @@
 import * as router from 'koa-joi-router';
-import { getStateCaseData, getStateTotals, getStates, getMaxDate, getCountryCaseData, getStateCountyTotals } from '../services';
+import { getStateCaseData, getStateTotals, getStates, getMaxDate, getCountryCaseData, getStateCountyTotals, getStats, getCaseData } from '../services';
 import * as cache from '../services/cache';
 import { getECDCData, loadECDCData } from '../services/etl/ecdc';
 import { getNYTData, loadNYTData } from '../services/etl/nyt';
@@ -16,19 +16,24 @@ route.get('/covid', async(ctx) => {
     ctx.redirect('/covid');
 });
 
+route.get('/covid_api/stats', async(ctx) => {
+    const state = ctx.query.state;
+    const cacheKey = `stats:${state}`;
+
+    // if(!await cache.get(cacheKey)) {
+        await cache.set(cacheKey, await getStats(state))
+    // }
+    ctx.body = await cache.get(cacheKey);
+});
+
+
 route.get('/covid_api/state_case', async (ctx) => {
     const state = ctx.query.state;
     const days = ctx.query.days;
     const cacheKey = `state_case:${state}:${days}`;
 
     if(!await cache.get(cacheKey)) {
-
-        if (ctx.query.state === 'US') {
-            await cache.set(cacheKey, await getCountryCaseData(days))
-        }
-        else {
-            await cache.set(cacheKey,  await getStateCaseData(state, days))
-        }
+        await cache.set(cacheKey, await getCaseData(state, days))
     }
 
     ctx.body = await cache.get(cacheKey);
@@ -53,6 +58,14 @@ route.get('/covid_api/state_total', async (ctx) => {
 
 route.get('/covid_api/states', async (ctx) => {
     const cacheKey = `states`;
+    if(!await cache.get(cacheKey)) {
+        await cache.set(cacheKey, await getStates());
+    }
+    ctx.body = await cache.get(cacheKey);
+});
+
+route.get('/covid_api/stats', async (ctx) => {
+    const cacheKey = `stats`;
     if(!await cache.get(cacheKey)) {
         await cache.set(cacheKey, await getStates());
     }
