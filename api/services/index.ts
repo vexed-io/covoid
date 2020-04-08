@@ -186,3 +186,12 @@ export const getMaxDate = async () => {
     return response.rows[0];
 }
 
+
+
+export const registerEmail = async (email) => {
+    const client = await getClient();
+    const response = await client.query(`
+        insert into emails (email) values ($1);
+    `, [email]);
+    return response.rows[0];
+}

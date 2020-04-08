@@ -7,34 +7,23 @@
     <title>Covid</title>
     <style>
 
+
+        * {
+            font-family: Helvetica, Arial, sans-serif;
+        }
+
         body {
             padding-left: 24px;
             padding-right: 24px;
         }
 
-        .decal-row {
-            display: flex;
-            flex-direction: row;
-            margin-bottom: 12px;
+        a {
+            color: black;
         }
 
-        .decal {
-            flex: 1;
-            height: 12px;
-            background-color: lightgrey;
-            margin-right: 12px;
-        }
-        
-        .decal:last-child {
-            margin-right: 0px;
-        }
 
         h1, h2, h3 {
             margin: 0px;
-        }
-
-        * {
-            font-family: Helvetica, Arial, sans-serif;
         }
 
         .head {
@@ -49,11 +38,6 @@
             display: flex;
             justify-content: space-between;
         }
-
-        .head a {
-            color: black;
-        }
-
 
         .last-update {
             color: gray;
@@ -117,6 +101,31 @@
             color: red;
         }
 
+        .footer {
+            display: flex;
+        }
+
+        .footer > * {
+            flex: 1;
+        }
+
+        .footer form > * {
+            display: inline;
+        }
+        .footer #submit {
+            border: 1px solid gray;
+            padding: 2px 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .footer #submit:hover {
+            background-color: grey;
+        }
+        .footer input {
+            margin-top: 12px;
+        }
+
+
     </style>
     <script>
         !function(){var analytics=window.analytics=window.analytics||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on"];analytics.factory=function(t){return function(){var e=Array.prototype.slice.call(arguments);e.unshift(t);analytics.push(e);return analytics}};for(var t=0;t<analytics.methods.length;t++){var e=analytics.methods[t];analytics[e]=analytics.factory(e)}analytics.load=function(t,e){var n=document.createElement("script");n.type="text/javascript";n.async=!0;n.src="https://cdn.segment.com/analytics.js/v1/"+t+"/analytics.min.js";var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(n,a);analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.1.0";
@@ -135,7 +144,7 @@
     </div> -->
     <div class="head">
         <div class="topline">
-            <h1>Covid Statistics</h1>
+            <h1>Covid Statistics - <span id="current-state"></span></h1>
             <div class="last-update">Last update <span id="max-date">Loading...</span></div>
         </div>
         <div>As found from the <a href="https://github.com/nytimes/covid-19-data">New York Times Data Set</a></div>
@@ -184,15 +193,29 @@
         <div class="stat_insight" id="percent_insight"></div>
         <svg id="state_trend"> </svg>
     </div>
-    <a href="/faq">FAQ</a>
+    <br>
+    <div class="footer">
+        <form>
+            <div class="label"> Interested in email updates on new features or insights? </div>
+            <br>
+            <input  type="email" name="email" id="email" /> 
+            <div id="submit" onclick="registerEmail()">Register</div>
+            <div id="confirm"></div>
+        </form>
+        <a href="/faq">FAQ</a> 
+    </div>
+  
 </body>
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script>
     const appState = {
         currentDate: null,
-        currentState: decodeURIComponent(location.search.replace(/^.*?\=/, '')) || 'New York',
+        currentState: decodeURIComponent(location.search.replace(/^.*?\=/, '')) || 'US',
         stateData: {}
     };
+
+    document.getElementById('current-state').innerHTML = appState.currentState;
+
 
     function formateDate (date) {
         const d = new Date(date);
@@ -247,13 +270,15 @@
         document.getElementById('cases_yesterday').innerHTML =  '+' + s.case_delta.toLocaleString() + ' since yesterday'
         document.getElementById('deaths_today').innerHTML = s.deaths.toLocaleString()
         document.getElementById('deaths_yesterday').innerHTML = '+' + s.death_delta.toLocaleString() + ' since yesterday';
-        const cPercentToday = (s.case_percent_increase_today*100).toFixed(0);
-        const cPercentYesterday = (s.case_percent_increase_yesterday*100).toFixed(0);
-        const dPercentToday = (s.death_percent_increase_today*100).toFixed(0);
-        const dPercentYesterday = (s.death_percent_increase_yesterday*100).toFixed(0);
+        const cPercentToday = +(s.case_percent_increase_today*100).toFixed(0);
+        const cPercentYesterday = + (s.case_percent_increase_yesterday*100).toFixed(0);
+        const dPercentToday = + (s.death_percent_increase_today*100).toFixed(0);
+        const dPercentYesterday = + (s.death_percent_increase_yesterday*100).toFixed(0);
 
         const cIncrease = cPercentToday > cPercentYesterday;
         const dIncrease = dPercentToday > dPercentYesterday;
+
+        console.log(dIncrease, dPercentToday, dPercentYesterday)
 
         const cInsightElem = document.getElementById('cases_insight');
         const dInsightElem = document.getElementById('deaths_insight');
@@ -268,7 +293,7 @@
         dInsightElem.classList.add(dIncrease ? 'bad' : 'good');
 
         document.getElementById('region_insight').innerHTML = 
-            `${s.fastest_state.state} has the fastest daily growth at ${(s.fastest_state.percent * 100).toFixed(0)}%`
+            `${s.fastest_state.state} has the fastest daily growth rate at ${(s.fastest_state.percent * 100).toFixed(0)}%`
 
     }
   
@@ -283,7 +308,7 @@
 
     function renderSubregionBreakdown (state) {
         getStateTotalData(state).then((data) => {
-        const margin = {top: 40, right: 40, bottom: 50, left: 70};
+        const margin = {top: 20, right: 40, bottom: 50, left: 70};
         const width = window.innerWidth - 48 - margin.left - margin.right;
         const height = 410 - margin.top - margin.bottom;
 
@@ -344,6 +369,12 @@
                 tooltipDiv.transition()		
                     .duration(500)		
                     .style("opacity", 0);	
+            })
+            .on("click", function(d) {		
+                if(appState.currentState == 'US') {
+                    location.search = `state=${d.state}`;
+                }
+
             });
 
         // add the x Axis
@@ -573,7 +604,26 @@
             today: (await getStateData(state))[0],
             yesterday: (await getStateData(state))[1]
         }
+        console.log(stats);
         return stats;
+    }
+
+    function registerEmail () {
+        const input =  document.getElementById('email');
+        const confirm = document.getElementById('confirm');
+        fetch(`/email`, {
+            method: 'POST',
+            body: JSON.stringify({email: input.value}),
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        }).then(() => {
+            input.value = '';
+        }).then(() => {
+            confirm.innerHTML = 'Success! Thanks for signing up.'
+        }).catch(() => {
+            confirm.innerHTML = 'Unable to register you. Please try again.'
+        })
     }
 
 </script>

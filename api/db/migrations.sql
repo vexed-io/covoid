@@ -47,7 +47,7 @@ create table if not exists who (
     deaths numeric,
     lat numeric,
     lon numeric
-)
+);
 
 create table if not exists jhu_cases (
     date date,
@@ -55,7 +55,7 @@ create table if not exists jhu_cases (
     country text,
     province text,
     lat numeric,
-    lon numeric,
+    lon numeric
 );
 
 create table if not exists jhu_deaths (
@@ -83,11 +83,17 @@ create materialized view if not exists jhu as (
         cases, 
         deaths, 
         recoveries, 
-        jhu_case.lat, 
-        jhu_case.lon 
+        jhu_cases.lat, 
+        jhu_cases.lon 
     from jhu_cases 
         join jhu_deaths using(date, country, province) 
         join jhu_recoveries using (date, country, province)
 );
 
+
+create table if not exists emails (
+    id serial,
+    email not null text,
+    created_at timestamp default current_timestamp
+);
 

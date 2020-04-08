@@ -49,7 +49,7 @@ export const migrateDatabase = async (client) => {
         level text,
         parent text
     );
-
+    
     create table if not exists who (
         date date,
         admin_name text,
@@ -58,7 +58,7 @@ export const migrateDatabase = async (client) => {
         lat numeric,
         lon numeric
     );
-
+    
     create table if not exists jhu_cases (
         date date,
         cases numeric,
@@ -76,7 +76,7 @@ export const migrateDatabase = async (client) => {
         lat numeric,
         lon numeric
     );
-
+    
     create table if not exists jhu_recoveries (
         date date,
         recoveries numeric,
@@ -85,7 +85,7 @@ export const migrateDatabase = async (client) => {
         lat numeric,
         lon numeric
     );
-
+    
     create materialized view if not exists jhu as (
         select date, 
             country, 
@@ -98,5 +98,14 @@ export const migrateDatabase = async (client) => {
         from jhu_cases 
             join jhu_deaths using(date, country, province) 
             join jhu_recoveries using (date, country, province)
-    );`); 
+    );
+    
+    
+    create table if not exists emails (
+        id serial,
+        email text not null ,
+        created_at timestamp default current_timestamp
+    );
+    
+    `); 
 }

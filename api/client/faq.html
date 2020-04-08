@@ -12,16 +12,71 @@
         analytics.page();
         }}();
     </script>
+    <style>
+
+        * {
+            font-family: Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            padding-left: 24px;
+            padding-right: 24px;
+        }
+
+        a {
+            color: black;
+        }
+
+
+        /* h1, h2, h3 {
+            margin: 0px;
+        } */
+
+        a {
+            black
+        }
+    </style>
 </head>
 <body>
+    
+    <h1>FAQ</h1>
+    <h2>
+        What is this?
+    </h2>
+    <p>
+        I was having a hard time pulling out statistics around the ongoing COVID-19 pandemic. <br/>
+        I went straight to the source and found them. I explored them in ways that were meaningful to me, and am now sharing those results. <br/>
+        I'm a software engineering, not a epidemiologist. I've tried to avoid qualitative assesments, and just show the numbers.
+    </p>
+    <h2>
+        Who are you?
+    </h2>
+    <p>
+        This site was put together by Dylan Watt, <a href="https://www.linkedin.com/in/dylanwatt/"> a developer.</a>
+    </p>
     <h2>
         Where is data coming from?
     </h2>
     <p>
-        <a href="https://github.com/nytimes/covid-19-data"> New York Times Data</a> <br/>
+        <a href="https://github.com/nytimes/covid-19-data"> New York Times Data</a> (This is the only one actively displayed) <br/> 
         <a href="https://www.ecdc.europa.eu/en/publications-data/download-todays-data-geographic-distribution-covid-19-cases-worldwide">European CDC</a> <br/>
         <a href="https://data.humdata.org/dataset/coronavirus-covid-19-cases-data-for-china-and-the-rest-of-the-world">WHO</a> <br/>
         <a href="https://data.humdata.org/dataset/novel-coronavirus-2019-ncov-cases">John Hopkins University</a>
+    </p>
+    <h2>
+        How does this work?
+    </h2>
+    <p>
+        You can find the source code <a href="https://github.com/vexed-io/covoid"> on github.</a> <br/>
+        Generally speaking, the site checks for new data from different sources on an hourly basis, and ingests them for reporting purposes. <br>
+        Typescript/Postgres/Redis backend and a vanillajs frontend with some d3.
+    </p>
+    <h2>
+        I have feedback.
+    </h2>
+    <p>
+        Please use <a href="https://github.com/vexed-io/covoid/issues">the issues</a> to let me know anything that could use improvement. <br>
+        Or send me an email at dylan@dylanwatt.com.
     </p>
 </body>
 </html>

@@ -4,15 +4,19 @@ import * as cors from '@koa/cors';
 import * as helmet from 'koa-helmet';
 import { init } from './db';
 import route from './routes';
+import * as bodyparser from 'koa-bodyparser';
+
 
 const app = new koa();
 
 app.use(helmet());
+app.use(bodyparser());
+
+app.use(cors());
 app.use(staticServer('./client', {
     maxage: 1000*60*5,
     extensions: ['html', '.js']
 }));
-app.use(cors());
 app.use(route.middleware());
 
 (async () => {

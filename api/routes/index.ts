@@ -1,15 +1,21 @@
 import * as router from 'koa-joi-router';
-import { getStateCaseData, getStateTotals, getStates, getMaxDate, getCountryCaseData, getStateCountyTotals, getStats, getCaseData } from '../services';
+import { getStateCaseData, getStateTotals, getStates, getMaxDate, getCountryCaseData, getStateCountyTotals, getStats, getCaseData, registerEmail } from '../services';
 import * as cache from '../services/cache';
 import { getECDCData, loadECDCData } from '../services/etl/ecdc';
 import { getNYTData, loadNYTData } from '../services/etl/nyt';
 import { getWHOData, loadWHOData } from '../services/etl/who';
 import { getJHUData, loadJHUData } from '../services/etl/jhu';
 
+
 const route = router();
 
 route.get('/', async(ctx) => {
     ctx.redirect('/covid');
+});
+
+route.post('/email', async(ctx) => {
+    
+    ctx.body = registerEmail(ctx.request.body.email);
 });
 
 route.get('/covid', async(ctx) => {
@@ -25,7 +31,6 @@ route.get('/covid_api/stats', async(ctx) => {
     // }
     ctx.body = await cache.get(cacheKey);
 });
-
 
 route.get('/covid_api/state_case', async (ctx) => {
     const state = ctx.query.state;

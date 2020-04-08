@@ -27,6 +27,7 @@
     "csv-parse": "^4.8.8",
     "db-migrate": "^0.11.6",
     "koa": "^2.11.0",
+    "koa-bodyparser": "^4.3.0",
     "koa-force-https": "^2.0.1",
     "koa-helmet": "^5.2.0",
     "koa-joi-router": "^6.0.2",
