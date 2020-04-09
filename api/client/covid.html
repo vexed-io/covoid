@@ -233,13 +233,13 @@
         currentState: decodeURIComponent(location.search.replace(/^.*?\=/, '')) || 'US',
         stateData: {}
     };
-
-    document.getElementById('current-state').innerHTML = appState.currentState;
-
+    const width = window.innerWidth;
+    const isMobile = width > 768 ? 28 : 14;
 
     function formateDate (date) {
-        const d = new Date(date);
-        return `${(d.getMonth() + 1)}.${ (d.getDate() + 1)}.${d.getFullYear()}`
+        const d = date.split('-')
+        console.log(d, date);
+        return `${(d[1])}.${ (d[2])}.${d[0]}`
     }
 
     analytics.page("Covid", {state: appState.currentState});
@@ -599,10 +599,12 @@
         return {x,y,width,height,margin};
     }
 
+
+
     async function getStateData(state) {
         appState.stateData[state] = appState.stateData[state] 
             ? appState.stateData[state] 
-            : fetch(`/covid_api/state_case?state=${state}&days=28`).then((response) => response.json());
+            : fetch(`/covid_api/state_case?state=${state}&days=${isMobile}`).then((response) => response.json());
         
         return await appState.stateData[state]
     }
@@ -610,7 +612,7 @@
     async function getStateTotalData(state) {
         appState.stateTotal = appState.stateTotal 
             ? appState.stateTotal 
-            : fetch(`/covid_api/state_total?state=${state}&days=28`).then((response) => response.json());
+            : fetch(`/covid_api/state_total?state=${state}&days=${isMobile}`).then((response) => response.json());
 
         return await appState.stateTotal;
     }
