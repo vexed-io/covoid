@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Covid</title>
+    <meta name="description" content="Up to date numbers on COVID-19">
+    <title>Covid Statistics</title>
     <style>
 
 
@@ -37,6 +38,7 @@
         .head .topline {
             display: flex;
             justify-content: space-between;
+            flex-wrap: wrap;
         }
 
         .last-update {
@@ -56,7 +58,7 @@
             border-bottom: 1px solid black;
             padding-bottom: 18px;
         }
-
+        
         .selector {
             width: 300px;
         }
@@ -70,6 +72,22 @@
         .stat {
             flex: none;
             width: 200px;
+        }
+
+        @media (max-width: 768px) {
+            .second-line {
+                flex-wrap: wrap;
+            }
+            .selector {
+                width: 100%;
+                margin-bottom: 12px;
+            }
+            .stat {
+                width: 50%;
+            }
+            .source-name {
+                font-size: .8em;
+            }
         }
 
         .graph {
@@ -144,10 +162,12 @@
     </div> -->
     <div class="head">
         <div class="topline">
-            <h1>Covid Statistics - <span id="current-state"></span></h1>
+            <div>
+                <h1>Covid Statistics</h1>
+                <div class="source-name">As found from the <a href="https://github.com/nytimes/covid-19-data">New York Times Data Set</a></div>
+            </div>
             <div class="last-update">Last update <span id="max-date">Loading...</span></div>
         </div>
-        <div>As found from the <a href="https://github.com/nytimes/covid-19-data">New York Times Data Set</a></div>
     </div>
 
 
