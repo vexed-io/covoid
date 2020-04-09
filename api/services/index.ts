@@ -97,6 +97,8 @@ export const getFastestGrowingRegion = async (state) => {
     const client = await getClient();
     const forCountry = state === 'US';
 
+    const bind = !forCountry ? [state] : []
+
     return (await client.query(`
     select 
         state, 
@@ -110,7 +112,7 @@ export const getFastestGrowingRegion = async (state) => {
                 rank() over (partition by ${forCountry ? 'state': 'county'} order by date desc) 
             from ${forCountry ? 'nyt_state': 'nyt_counties'} 
             ${!forCountry 
-                ? "where state = '"+state+"'" : ''}
+                ? "where state = $1" : ''}
             order by date desc) t 
         where rank <= 2) a 
     where state != 'Unknown' 
@@ -118,7 +120,7 @@ export const getFastestGrowingRegion = async (state) => {
     having max(cases)  > 10
     order by 2 desc 
     limit 1;
-    `)).rows[0]
+    `, bind)).rows[0]
 }
 
 export const getStateTotals = async () => {

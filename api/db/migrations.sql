@@ -93,7 +93,7 @@ create materialized view if not exists jhu as (
 
 create table if not exists emails (
     id serial,
-    email not null text,
+    email text  not null ,
     created_at timestamp default current_timestamp
 );
 
