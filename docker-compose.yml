@@ -28,3 +28,21 @@ services:
       - postgres
       - redis 
     command: yarn run dev
+  prod:
+    build:
+      context: ./api
+    volumes: 
+      - './api:/usr/src/app'
+    environment: 
+      -  "PGUSER=postgres"
+      -  "PGHOST=postgres"
+      -  "PGPASSWORD=password"
+      -  "PGPORT=5432"
+      -  "REDIS_URL=redis://redis:6379"
+      -  "PORT=3001"
+    ports:
+      - "3001:3000"
+    depends_on: 
+      - postgres
+      - redis 
+    command: yarn run start

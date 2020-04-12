@@ -90,6 +90,38 @@ create materialized view if not exists jhu as (
         join jhu_recoveries using (date, country, province)
 );
 
+create table if not exists covid_stats (  
+    country text, 
+    province text, 
+    county text, 
+    date date,
+    cases integer,
+    deaths integer,
+    recoveries integer,
+    source text
+);
+
+begin;
+
+truncate covid_stats;
+
+insert into covid_stats (country, province, date, cases, deaths, recoveries, source) (
+    select country, province, date, cases, deaths, recoveries, 'jhu' from jhu
+);
+
+insert into covid_stats (country, province, county, date, cases, deaths, source) (
+    select 'US', state, county, date, cases, deaths, 'nyt' from nyt_counties
+);
+
+insert into covid_stats (country, date, cases, deaths, source) (
+    select admin_name, date, cases, nullif(deaths, 'NaN'), 'who' from who
+);
+
+insert into covid_stats (country, date, cases, deaths, source) (
+    select countries_and_territories, date, cases, deaths, 'ecdc' from ecdc
+);
+
+commit;
 
 create table if not exists emails (
     id serial,

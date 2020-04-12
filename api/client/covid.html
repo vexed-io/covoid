@@ -238,7 +238,6 @@
 
     function formateDate (date) {
         const d = date.split('-')
-        console.log(d, date);
         return `${(d[1])}.${ (d[2])}.${d[0]}`
     }
 
@@ -297,8 +296,6 @@
 
         const cIncrease = cPercentToday > cPercentYesterday;
         const dIncrease = dPercentToday > dPercentYesterday;
-
-        console.log(dIncrease, dPercentToday, dPercentYesterday)
 
         const cInsightElem = document.getElementById('cases_insight');
         const dInsightElem = document.getElementById('deaths_insight');
@@ -626,7 +623,7 @@
             today: (await getStateData(state))[0],
             yesterday: (await getStateData(state))[1]
         }
-        console.log(stats);
+
         return stats;
     }
 

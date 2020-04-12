@@ -4,6 +4,7 @@
     "module": "commonjs",                     /* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', 'es2020', or 'ESNext'. */
     "outDir": "./_dist",                        /* Redirect output structure to the directory. */
     "noEmit": false,                        /* Do not emit outputs. */
-    "strict": false                           /* Enable all strict type-checking options. */
+    "strict": false,                        /* Enable all strict type-checking options. */
+    "sourceMap" : true                           
   }
 }

@@ -2,14 +2,15 @@ import { getClient } from "../db";
 
 export const getCaseData =  async (state, days) => { 
     if (state === 'US') {
+        console.log('here0.7')
         return  getCountryCaseData(days)
     }
     return getStateCaseData(state, days)
 }
 
-export const getCountryCaseData = async (days) => {
+export const getCountryCaseData = async (days, source ='nyt') => {
     const client = await getClient();
-    const bindParams = [days];
+    const bindParams = [days, source];
     const response = await client.query(`
         select date, 
             sum(cases) cases,
@@ -18,18 +19,20 @@ export const getCountryCaseData = async (days) => {
             (sum(deaths) /  nullif(sum(deaths_yesterday)::numeric, 0)) - 1 as percent_increase_deaths 
         from (
             select
-                date :: date :: text,
+                date,
                 state,
                 cases,
                 deaths,
                 lag(cases, 1) over (partition by state order by date asc) as cases_yesterday,
                 lag(deaths, 1) over (partition by state order by date asc) as deaths_yesterday
-            from nyt_state
-            where cases > 0) t 
+            from covid_stats
+            where source = $2 and cases > 0) t 
         group by 1 
         order by date desc
         limit $1
     `, bindParams);
+    await client.release();
+    console.log('here 2');
     return response.rows;
 };
 
@@ -50,6 +53,7 @@ export const getStateCaseData = async (state, days) => {
         order by 1 desc
         limit $1
     `, bindParams);
+    await client.release();
     return response.rows;
 };
 
@@ -67,6 +71,7 @@ export const getStateDeathData = async (state) => {
         ${state ? 'and state = $1' : ''}
         order by date desc;
     `, bindParams);
+    await client.release();
     return response.rows;
 };
 
@@ -75,6 +80,7 @@ export const getUSTotals = async () => {
     const response = await client.query(`
         select sum(cases) from nyt_state where date = (select max(date) from nyt_state);
     `);
+    await client.release();
     return response.rows[0];
 };
 
@@ -90,6 +96,7 @@ export const getStateCountyTotals = async (state) => {
         group by 1
         order by 2 desc;
     `, [state]);
+    await client.release();
     return response.rows;
 };
 
@@ -99,7 +106,7 @@ export const getFastestGrowingRegion = async (state) => {
 
     const bind = !forCountry ? [state] : []
 
-    return (await client.query(`
+    const ret = (await client.query(`
     select 
         state, 
         (max(cases*1.0) / nullif(min(cases), 0)) - 1 as percent
@@ -120,7 +127,9 @@ export const getFastestGrowingRegion = async (state) => {
     having max(cases)  > 10
     order by 2 desc 
     limit 1;
-    `, bind)).rows[0]
+    `, bind)).rows[0];
+    await client.release();
+    return ret;
 }
 
 export const getStateTotals = async () => {
@@ -134,6 +143,7 @@ export const getStateTotals = async () => {
         group by 1
         order by 2 desc;
     `);
+    await client.release();
     return response.rows;
 };
 
@@ -142,6 +152,7 @@ export const getStates = async () => {
     const response = await client.query(`
         select distinct state from nyt_state order by state asc;
     `);
+    await client.release();
     const states  = response.rows;
     states.unshift({ state: 'US'});
     return states;
@@ -160,6 +171,7 @@ type stats = {
 }
 
 export const getStats = async (state): Promise<stats> => {
+    console.log('here0.5')
     const data = await getCaseData(state, 4);
 
     return {
@@ -185,6 +197,7 @@ export const getMaxDate = async () => {
     const response = await client.query(`
         select max(date)::text date from nyt_state;
     `);
+    await client.release();
     return response.rows[0];
 }
 
@@ -195,5 +208,6 @@ export const registerEmail = async (email) => {
     const response = await client.query(`
         insert into emails (email) values ($1);
     `, [email]);
+    await client.release();
     return response.rows[0];
 }

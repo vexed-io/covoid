@@ -1,4 +1,5 @@
 import { promises } from 'fs';
+import { getClient } from '.';
 
 async function readModuleFile(path) {
     var filename = require.resolve(path);
@@ -106,6 +107,62 @@ export const migrateDatabase = async (client) => {
         email text not null ,
         created_at timestamp default current_timestamp
     );
+
+    create materialized view if not exists jhu as (
+        select date, 
+            country, 
+            province, 
+            cases, 
+            deaths, 
+            recoveries, 
+            jhu_cases.lat, 
+            jhu_cases.lon 
+        from jhu_cases 
+            join jhu_deaths using(date, country, province) 
+            join jhu_recoveries using (date, country, province)
+    );
+    
+    create table if not exists covid_stats (  
+        country text, 
+        state text, 
+        county text, 
+        date date,
+        cases integer,
+        deaths integer,
+        recoveries integer,
+        source text
+    );
+    
     
     `); 
+}
+
+export const recalcStats = async () => {
+    const client = await getClient();
+    await client.query(`
+        refresh materialized view jhu;
+
+        begin;
+
+        truncate covid_stats;
+
+        insert into covid_stats (country, state, date, cases, deaths, recoveries, source) (
+            select country, province, date, cases, deaths, recoveries, 'jhu' from jhu
+        );
+
+        insert into covid_stats (country, state, county, date, cases, deaths, source) (
+            select 'US', state, county, date, cases, deaths, 'nyt' from nyt_counties
+        );
+
+        insert into covid_stats (country, date, cases, deaths, source) (
+            select admin_name, date, cases, nullif(deaths, 'NaN'), 'who' from who
+        );
+
+        insert into covid_stats (country, date, cases, deaths, source) (
+            select countries_and_territories, date, cases, deaths, 'ecdc' from ecdc
+        );
+
+        commit;
+    `);
+    return await client.release();
 }

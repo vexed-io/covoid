@@ -24,37 +24,27 @@ function getFormattedDate (date) {
     return `${year}-${month}-${day}`;
 }
 
-export const getECDCData = async () => {
-    const now = new Date();
+export const getECDCData = async (date = new Date(), tries = 0) => {
+    if (tries++ > 4) {
+        throw `Can't get ecdc data`;
+    }
+    const now = new Date(date);
     const yesterday = (new Date(now.setDate(now.getDate() -1)));
-    const twodaysago = (new Date(yesterday.setDate(yesterday.getDate() -1)));
 
-    console.log(`https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-${getFormattedDate(now)}.xlsx`)
-
-    return axios({
-        url: `https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-${getFormattedDate(now)}.xlsx`,
-        method: 'GET',
-        responseType: 'arraybuffer',
-    }).catch((err) => {
-        console.log(err);
-        return axios({
-            url: `https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-${getFormattedDate(yesterday)}.xlsx`,
+    try {
+        return await axios({
+            url: `https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-${getFormattedDate(now)}.xlsx`,
             method: 'GET',
             responseType: 'arraybuffer',
+        }).then((body) => {
+            const workbook = xlsx.read(body.data);
+            const sheetNameList = workbook.SheetNames;
+            const json = xlsx.utils.sheet_to_json(workbook.Sheets[sheetNameList[0]]);
+            return json as ecdcDatum[];
         })
-    }).catch((err) => {
-        console.log(err);
-        return axios({
-            url: `https://www.ecdc.europa.eu/sites/default/files/documents/COVID-19-geographic-disbtribution-worldwide-${getFormattedDate(twodaysago)}.xlsx`,
-            method: 'GET',
-            responseType: 'arraybuffer',
-        })
-    }).then((body) => {
-        const workbook = xlsx.read(body.data);
-        const sheetNameList = workbook.SheetNames;
-        const json = xlsx.utils.sheet_to_json(workbook.Sheets[sheetNameList[0]]);
-        return json as ecdcDatum[];
-    });
+    } catch (e) {
+        return getECDCData(yesterday, tries);
+    }
 }
 
 
@@ -87,5 +77,6 @@ export const loadECDCData =  async () => {
             console.error(e);
         })
     })
-    client.query('commit;');
+    await client.query('commit;');
+    await client.release();
 }

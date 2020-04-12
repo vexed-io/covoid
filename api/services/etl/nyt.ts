@@ -50,6 +50,7 @@ const loadNYTStates = async (data) => {
         })
     }));
     await client.query('commit;');  
+    await client.release();
 }
 
 const loadNYTCounties = async (data) => {
@@ -83,4 +84,5 @@ const loadNYTCounties = async (data) => {
         })
     }))
     await client.query('commit;');
+    await client.release();
 }

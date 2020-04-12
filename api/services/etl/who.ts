@@ -42,6 +42,7 @@ export const loadWHOData = async () => {
         })
     }))
     await client.query('commit;');
+    await client.release();
 }
 
 

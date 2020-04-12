@@ -63,11 +63,11 @@ const loadJHUCases = async(data) => {
         ]
         await client.query(query, binds).catch((e) => {
             console.error(e);
-            console.log(binds);
             process.exit(1);
         })
     }))
     await client.query('commit;');
+    await client.release();
 
 }
 
@@ -100,6 +100,7 @@ const loadJHUDeaths = async(data) => {
         })
     }))
     await client.query('commit;');
+    await client.release();
 }
 
 const loadJHURecoveries = async(data) => {
@@ -131,11 +132,13 @@ const loadJHURecoveries = async(data) => {
         })
     }))
     await client.query('commit;');
+    await client.release();
 }
 
 const refreshJHU =  async() => {
     const client = await getClient();
     client.query('REFRESH MATERIALIZED VIEW jhu;');
+    await client.release();
 
 }
 

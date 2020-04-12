@@ -14,7 +14,6 @@ route.get('/', async(ctx) => {
 });
 
 route.post('/email', async(ctx) => {
-    
     ctx.body = registerEmail(ctx.request.body.email);
 });
 
@@ -26,9 +25,9 @@ route.get('/covid_api/stats', async(ctx) => {
     const state = ctx.query.state;
     const cacheKey = `stats:${state}`;
 
-    // if(!await cache.get(cacheKey)) {
+    if(!await cache.get(cacheKey)) {
         await cache.set(cacheKey, await getStats(state))
-    // }
+    }
     ctx.body = await cache.get(cacheKey);
 });
 
@@ -63,14 +62,6 @@ route.get('/covid_api/state_total', async (ctx) => {
 
 route.get('/covid_api/states', async (ctx) => {
     const cacheKey = `states`;
-    if(!await cache.get(cacheKey)) {
-        await cache.set(cacheKey, await getStates());
-    }
-    ctx.body = await cache.get(cacheKey);
-});
-
-route.get('/covid_api/stats', async (ctx) => {
-    const cacheKey = `stats`;
     if(!await cache.get(cacheKey)) {
         await cache.set(cacheKey, await getStates());
     }
