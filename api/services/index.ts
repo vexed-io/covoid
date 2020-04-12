@@ -2,7 +2,6 @@ import { getClient } from "../db";
 
 export const getCaseData =  async (state, days) => { 
     if (state === 'US') {
-        console.log('here0.7')
         return  getCountryCaseData(days)
     }
     return getStateCaseData(state, days)
@@ -12,27 +11,29 @@ export const getCountryCaseData = async (days, source ='nyt') => {
     const client = await getClient();
     const bindParams = [days, source];
     const response = await client.query(`
-        select date, 
-            sum(cases) cases,
-            sum(deaths) deaths,
-            (sum(cases) / nullif(sum(cases_yesterday)::numeric, 0)) - 1 as percent_increase_cases,
-            (sum(deaths) /  nullif(sum(deaths_yesterday)::numeric, 0)) - 1 as percent_increase_deaths 
-        from (
-            select
-                date,
-                state,
-                cases,
-                deaths,
-                lag(cases, 1) over (partition by state order by date asc) as cases_yesterday,
-                lag(deaths, 1) over (partition by state order by date asc) as deaths_yesterday
-            from covid_stats
-            where source = $2 and cases > 0) t 
-        group by 1 
-        order by date desc
+            select date :: date :: text, 
+                sum(cases) cases,
+                sum(deaths) deaths,
+                sum(cases_yesterday)::numeric as cases_yesterday,
+                sum(deaths_yesterday)::numeric as deaths_yesterday,
+                (sum(cases) / nullif(sum(cases_yesterday)::numeric, 0)) - 1 as percent_increase_cases,
+                (sum(deaths) /  nullif(sum(deaths_yesterday)::numeric, 0)) - 1 as percent_increase_deaths 
+            from (
+                select
+                    date,
+                    state,
+                    county,
+                    cases,
+                    deaths,
+                    lag(cases, 1) over (partition by state, county order by date asc) as cases_yesterday,
+                    lag(deaths, 1) over (partition by state, county order by date asc) as deaths_yesterday
+                from covid_stats
+                where source = $2 and cases > 0) t 
+            group by 1 
+            order by date desc
         limit $1
     `, bindParams);
     await client.release();
-    console.log('here 2');
     return response.rows;
 };
 
@@ -171,7 +172,6 @@ type stats = {
 }
 
 export const getStats = async (state): Promise<stats> => {
-    console.log('here0.5')
     const data = await getCaseData(state, 4);
 
     return {

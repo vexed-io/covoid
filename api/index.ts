@@ -13,11 +13,12 @@ app.use(helmet());
 app.use(bodyparser());
 
 app.use(cors());
+
+app.use(route.middleware());
 app.use(staticServer('./client', {
-    maxage: 1000*60*5,
+    maxAge: 1000*60*5,
     extensions: ['html', '.js']
 }));
-app.use(route.middleware());
 
 (async () => {
     await init;

@@ -7,12 +7,7 @@
     "dev": "ts-node-dev index.ts",
     "build": "yarn run tsc",
     "start": "node ./_dist/index.js",
-    "load_nyc": "ts-node ./scripts/load_nyc.ts",
-    "load_ecdc": "ts-node ./scripts/load_ecdc.ts",
-    "load_jhu": "ts-node ./scripts/load_jhu.ts",
-    "load_who": "ts-node ./scripts/load_who.ts",
-    "standardize": "ts-node ./scripts/standardize.ts",
-    "load": "yarn load_nyc && yarn load_ecdc && yarn load_jhu && yarn load_who"
+    "load": "ts-node ./scripts/load.ts"
   },
   "dependencies": {
     "@koa/cors": "2",

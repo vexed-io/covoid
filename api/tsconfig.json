@@ -5,6 +5,6 @@
     "outDir": "./_dist",                        /* Redirect output structure to the directory. */
     "noEmit": false,                        /* Do not emit outputs. */
     "strict": false,                        /* Enable all strict type-checking options. */
-    "sourceMap" : true                           
+    "inlineSourceMap": true                           
   }
 }

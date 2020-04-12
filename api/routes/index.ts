@@ -17,10 +17,6 @@ route.post('/email', async(ctx) => {
     ctx.body = registerEmail(ctx.request.body.email);
 });
 
-route.get('/covid', async(ctx) => {
-    ctx.redirect('/covid');
-});
-
 route.get('/covid_api/stats', async(ctx) => {
     const state = ctx.query.state;
     const cacheKey = `stats:${state}`;
