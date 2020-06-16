@@ -6,11 +6,9 @@ import { loadWHOData } from '../services/etl/who';
 import { reset } from '../services/cache';
 
 (async () => {
-    const loads = await Promise.all([loadECDCData(), loadJHUData(), loadNYTData(), loadWHOData()]);
-    const build_schema = await recalcStats();
+    // await loadECDCData();
+    // await loadJHUData();
+    await loadNYTData();
+    // await loadWHOData();
     await reset();
-    return {
-        loads,
-        build_schema
-    }
 })().then(console.log).catch(console.error).finally(() => process.exit())

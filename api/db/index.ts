@@ -3,8 +3,8 @@ import { migrateDatabase } from './db-structure';
 const connectionString = process.env.DATABASE;
 
 let config:PoolConfig = {
-    min: 2, 
-    max: 5,
+    min: 1, 
+    max: 2,
     idleTimeoutMillis: 100000,
     connectionTimeoutMillis: 100000
 };
